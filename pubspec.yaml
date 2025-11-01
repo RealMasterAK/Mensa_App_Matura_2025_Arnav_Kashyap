@@ -1,4 +1,4 @@
-name: learnskill
+name: mensaApp
 description: Pixel-perfect native iOS-style homepage as shown in the PNG.
 publish_to: 'none'
 version: 1.0.0+1
@@ -20,6 +20,7 @@ dependencies:
   logging: ^1.2.0
   http: ^1.5.0
   pdf: ^3.11.3
+  syncfusion_flutter_pdf: ^24.1.41
 
 dev_dependencies:
   flutter_test:
@@ -28,8 +29,3 @@ dev_dependencies:
 
 flutter:
   uses-material-design: false
-  
-  assets:
-    - assets/meat_icon.svg
-    - assets/veg_icon.svg
-    - assets/arrow.svg

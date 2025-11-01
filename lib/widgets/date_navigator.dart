@@ -35,20 +35,8 @@ class _DateNavigatorState extends State<DateNavigator> {
       _mondayOf(d).add(const Duration(days: 7));
 
   DateTime _snapToWeekday(DateTime d) {
-    if (!_isWeekend(d)) return d;
-    // Snap Saturday/Sunday forward to Monday if within range, else back to Friday
-    final forward = _startOfDay(d)
-        .add(Duration(days: DateTime.monday - d.weekday + 7))
-        .subtract(const Duration(days: 7));
-    // forward computed is next Monday of the same weekend; simpler:
-    final nextMon = _startOfDay(d).add(Duration(days: (8 - d.weekday) % 7));
-    if (!nextMon.isAfter(_maxDate)) return nextMon;
-    // else snap back to previous Friday
-    final prevFri = _startOfDay(d)
-        .subtract(Duration(days: (d.weekday - DateTime.friday + 7) % 7));
-    if (!prevFri.isBefore(_minDate)) return prevFri;
-    // As last resort clamp within bounds
-    return d.isBefore(_minDate) ? _minDate : _maxDate;
+    // Allow weekends, no snapping needed
+    return d;
   }
 
   @override
@@ -56,9 +44,9 @@ class _DateNavigatorState extends State<DateNavigator> {
     super.initState();
     final now = DateTime.now();
     final thisMonday = _mondayOf(now);
-    final nextFriday = _fridayOf(thisMonday.add(const Duration(days: 7)));
+    final nextSunday = _nextWeekMonday(now).add(const Duration(days: 6));
     _minDate = thisMonday;
-    _maxDate = nextFriday;
+    _maxDate = nextSunday;
 
     final init = widget.initialDate ?? _startOfDay(now);
     final clamped = init.isBefore(_minDate)
@@ -79,87 +67,91 @@ class _DateNavigatorState extends State<DateNavigator> {
     final DateTime? picked = await showCupertinoModalPopup<DateTime>(
       context: context,
       builder: (BuildContext context) {
-        return Container(
-          height: 300,
-          padding: const EdgeInsets.only(top: 6.0),
-          margin: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
+        return DefaultTextStyle(
+          style: const TextStyle(
+            decoration: TextDecoration.none,
           ),
-          color: CupertinoColors.systemBackground.resolveFrom(context),
-          child: SafeArea(
-            top: false,
-            child: Column(
-              children: [
-                // Header
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  decoration: const BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(
-                        color: CupertinoColors.separator,
-                        width: 0.5,
+          child: Container(
+            height: 300,
+            padding: const EdgeInsets.only(top: 6.0),
+            margin: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+            ),
+            color: CupertinoColors.systemBackground.resolveFrom(context),
+            child: SafeArea(
+              top: false,
+              child: Column(
+                children: [
+                  // Header
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
+                    decoration: const BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: CupertinoColors.separator,
+                          width: 0.5,
+                        ),
                       ),
                     ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      CupertinoButton(
-                        padding: EdgeInsets.zero,
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text(
-                          'Abbrechen',
-                          style: TextStyle(
-                            color: CupertinoColors.activeBlue,
-                            fontSize: 17,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        CupertinoButton(
+                          padding: EdgeInsets.zero,
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text(
+                            'Abbrechen',
+                            style: TextStyle(
+                              color: CupertinoColors.activeBlue,
+                              fontSize: 17,
+                            ),
                           ),
                         ),
-                      ),
-                      const Text(
-                        'Datum auswählen',
-                        style: TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w600,
-                          color: CupertinoColors.label,
-                        ),
-                      ),
-                      CupertinoButton(
-                        padding: EdgeInsets.zero,
-                        onPressed: () {
-                          Navigator.pop(context, _selectedDate);
-                        },
-                        child: const Text(
-                          'Fertig',
+                        const Text(
+                          'Datum auswählen',
                           style: TextStyle(
-                            color: CupertinoColors.activeBlue,
                             fontSize: 17,
                             fontWeight: FontWeight.w600,
+                            color: CupertinoColors.label,
                           ),
                         ),
-                      ),
-                    ],
+                        CupertinoButton(
+                          padding: EdgeInsets.zero,
+                          onPressed: () {
+                            Navigator.pop(context, _selectedDate);
+                          },
+                          child: const Text(
+                            'Fertig',
+                            style: TextStyle(
+                              color: CupertinoColors.activeBlue,
+                              fontSize: 17,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                // Date picker
-                Expanded(
-                  child: CupertinoDatePicker(
-                    initialDateTime: _selectedDate,
-                    minimumDate: _minDate,
-                    maximumDate: _maxDate,
-                    mode: CupertinoDatePickerMode.date,
-                    use24hFormat: true,
-                    onDateTimeChanged: (DateTime newDate) {
-                      // Clamp and snap to weekday within bounds
-                      DateTime d = _startOfDay(newDate);
-                      if (d.isBefore(_minDate)) d = _minDate;
-                      if (d.isAfter(_maxDate)) d = _maxDate;
-                      d = _snapToWeekday(d);
-                      setState(() => _selectedDate = d);
-                    },
+                  // Date picker
+                  Expanded(
+                    child: CupertinoDatePicker(
+                      initialDateTime: _selectedDate,
+                      minimumDate: _minDate,
+                      maximumDate: _maxDate,
+                      mode: CupertinoDatePickerMode.date,
+                      use24hFormat: true,
+                      onDateTimeChanged: (DateTime newDate) {
+                        // Allow all dates within bounds
+                        DateTime d = _startOfDay(newDate);
+                        if (d.isBefore(_minDate)) d = _minDate;
+                        if (d.isAfter(_maxDate)) d = _maxDate;
+                        setState(() => _selectedDate = d);
+                      },
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         );
@@ -167,9 +159,8 @@ class _DateNavigatorState extends State<DateNavigator> {
     );
 
     if (picked != null) {
-      final snapped = _snapToWeekday(_startOfDay(picked));
       setState(() {
-        _selectedDate = snapped;
+        _selectedDate = _startOfDay(picked);
       });
       _notify();
     }
@@ -182,57 +173,62 @@ class _DateNavigatorState extends State<DateNavigator> {
         _selectedDate.month == today.month &&
         _selectedDate.day == today.day;
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: CupertinoColors.systemBackground,
-        borderRadius: BorderRadius.circular(12),
+    return DefaultTextStyle(
+      style: const TextStyle(
+        decoration: TextDecoration.none,
       ),
-      child: Row(
-        children: [
-          // Date display
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  DateFormat('EEEE, d. MMMM', 'de_DE').format(_selectedDate),
-                  style: const TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w600,
-                    color: CupertinoColors.label,
-                  ),
-                ),
-                if (isToday) ...[
-                  const SizedBox(height: 2),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: CupertinoColors.systemBackground,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            // Date display
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                   Text(
-                    'Heute',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: CupertinoColors.activeBlue,
-                      fontWeight: FontWeight.w500,
+                    DateFormat('EEEE, d. MMMM', 'de_DE').format(_selectedDate),
+                    style: const TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w600,
+                      color: CupertinoColors.label,
                     ),
                   ),
+                  if (isToday) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      'Heute',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: CupertinoColors.secondaryLabel,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
                 ],
-              ],
-            ),
-          ),
-          // Select button
-          CupertinoButton(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            color: CupertinoColors.activeBlue,
-            borderRadius: BorderRadius.circular(8),
-            onPressed: _selectDate,
-            child: const Text(
-              'Ändern',
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-                color: CupertinoColors.white,
               ),
             ),
-          ),
-        ],
+            // Select button
+            CupertinoButton(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              color: CupertinoColors.activeBlue,
+              borderRadius: BorderRadius.circular(8),
+              onPressed: _selectDate,
+              child: const Text(
+                'Ändern',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: CupertinoColors.white,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
