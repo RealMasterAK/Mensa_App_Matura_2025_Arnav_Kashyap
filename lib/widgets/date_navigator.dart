@@ -18,17 +18,9 @@ class _DateNavigatorState extends State<DateNavigator> {
 
   DateTime _startOfDay(DateTime d) => DateTime(d.year, d.month, d.day);
 
-  bool _isWeekend(DateTime d) =>
-      d.weekday == DateTime.saturday || d.weekday == DateTime.sunday;
-
   DateTime _mondayOf(DateTime d) {
     final local = _startOfDay(d);
     return local.subtract(Duration(days: local.weekday - DateTime.monday));
-  }
-
-  DateTime _fridayOf(DateTime d) {
-    final mon = _mondayOf(d);
-    return mon.add(const Duration(days: 4));
   }
 
   DateTime _nextWeekMonday(DateTime d) =>

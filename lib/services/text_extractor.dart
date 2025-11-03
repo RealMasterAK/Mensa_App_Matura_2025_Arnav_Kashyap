@@ -1,7 +1,10 @@
 import 'package:syncfusion_flutter_pdf/pdf.dart';
+import 'package:logging/logging.dart';
 
 /// Extrahiert und bereinigt Text aus PDF-Dateien
 class TextExtractor {
+  final Logger _logger = Logger('TextExtractor');
+
   /// Extrahiert Text aus PDF-Bytes und korrigiert Zeilenumbrüche
   /// die Wörter fälschlicherweise trennen (z.B. "M\nontag" → "Montag")
   String extractText(List<int> pdfBytes) {
@@ -17,6 +20,9 @@ class TextExtractor {
 
       doc.dispose();
       String text = buffer.toString();
+
+      // Debug: Rohen extrahierten Text loggen
+      _logger.info('unreparierter Rohtext:\n$text');
 
       // Zeilenumbrüche innerhalb von Wörtern korrigieren
       text = _fixWordBreaks(text);

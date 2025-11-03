@@ -1,33 +1,25 @@
 class MenuItem {
   final String id, name, description, category;
-  final double price;
-  final int? calories;
 
   MenuItem({
     required this.id,
     required this.name,
     required this.description,
-    required this.price,
     required this.category,
-    this.calories,
   });
 
   factory MenuItem.fromJson(Map<String, dynamic> json) => MenuItem(
         id: json['id'],
         name: json['name'],
         description: json['description'],
-        price: (json['price'] as num).toDouble(),
         category: json['category'],
-        calories: json['calories'],
       );
 
   Map<String, dynamic> toJson() => {
         'id': id,
         'name': name,
         'description': description,
-        'price': price,
         'category': category,
-        if (calories != null) 'calories': calories,
       };
 }
 

@@ -159,7 +159,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return CupertinoPageScaffold(
+    return DefaultTextStyle(
+      style: const TextStyle(decoration: TextDecoration.none),
+      child: CupertinoPageScaffold(
       backgroundColor: CupertinoColors.systemGroupedBackground,
       child: SafeArea(
         child: CustomScrollView(
@@ -215,7 +217,7 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Container(
                 margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
                 child: DateNavigator(
-                  initialDate: _selectedDate,
+                  initialDate: DateTime.now(),
                   onDateChanged: (d) {
                     setState(() => _selectedDate = d);
                     _loadMenus();
@@ -313,6 +315,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
-    );
+    ));
   }
 }

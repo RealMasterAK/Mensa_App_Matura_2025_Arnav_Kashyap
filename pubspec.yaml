@@ -1,5 +1,5 @@
 name: mensaApp
-description: Pixel-perfect native iOS-style homepage as shown in the PNG.
+description: App zur Anzeige des Mensa-Menüs der KSWE.
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -14,18 +14,10 @@ dependencies:
     sdk: flutter
   cupertino_icons: ^1.0.2
   intl: ^0.20.2
-  flutter_platform_widgets: ^2.0.0
-  flutter_svg: ^2.0.9
   shared_preferences: ^2.2.2
   logging: ^1.2.0
   http: ^1.5.0
-  pdf: ^3.11.3
   syncfusion_flutter_pdf: ^24.1.41
-
-dev_dependencies:
-  flutter_test:
-    sdk: flutter
-  flutter_launcher_icons: ^0.13.1
 
 flutter:
   uses-material-design: false

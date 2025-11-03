@@ -50,7 +50,6 @@ class MenuFilter {
     DateTime endDate,
   ) {
     final result = <DailyMenu>[];
-    final existingDates = existingMenus.map((m) => _getDateKey(m.date)).toSet();
 
     for (var date = startDate; !date.isAfter(endDate); date = date.add(const Duration(days: 1))) {
       final existingMenu = existingMenus.firstWhere(
@@ -77,10 +76,6 @@ class MenuFilter {
 
   String _getCategoryLabel(String category) {
     return category == 'fleisch' ? 'Fleisch' : 'vegetarischen';
-  }
-
-  String _getDateKey(DateTime date) {
-    return '${date.year}-${date.month}-${date.day}';
   }
 
   bool _isSameDay(DateTime a, DateTime b) {
